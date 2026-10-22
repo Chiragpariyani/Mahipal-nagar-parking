@@ -1,37 +1,64 @@
 /**
- * Maipal Nagar Vehicle Register - one-time setup.
- * Run createVehicleForm() once; it creates the Google Form and its response Sheet.
- * Check View > Logs (or the Execution log) for the links.
+ * Maipal Nagar Parking - one-time setup.
+ * Run createVehicleForm() once; it creates the Google Form and its response Sheet,
+ * with validation on every field. Open View > Execution log for the links.
  */
 function createVehicleForm() {
-  var form = FormApp.create('Maipal Nagar Vehicle Register');
+  var form = FormApp.create('Maipal Nagar Parking - Vehicle Registration');
   form.setDescription(
     'Register your vehicle so neighbours can contact you if your vehicle blocks theirs. ' +
-    'Fill this once per vehicle. Submit again for a new vehicle or if details change.');
+    'Fill this once per vehicle. Submit again for another vehicle, or if your details change.');
   form.setCollectEmail(false);
-  form.setConfirmationMessage('Thank you! Your vehicle is registered in the Maipal Nagar Vehicle Register.');
+  form.setLimitOneResponsePerUser(false);
+  form.setConfirmationMessage('Thank you! Your vehicle is registered with Maipal Nagar Parking.');
 
-  form.addTextItem().setTitle("Owner's full name").setRequired(true);
-  form.addTextItem().setTitle('Tenement / house number').setRequired(true);
-  form.addParagraphTextItem().setTitle('Full address').setRequired(true);
+  function text(title, help, pattern, error, required) {
+    var item = form.addTextItem().setTitle(title).setRequired(required);
+    if (help) item.setHelpText(help);
+    item.setValidation(FormApp.createTextValidation()
+      .setHelpText(error).requireTextMatchesPattern(pattern).build());
+    return item;
+  }
 
-  var tenDigits = FormApp.createTextValidation()
-    .setHelpText('Enter a 10-digit mobile number')
-    .requireTextMatchesPattern('^[0-9]{10}$').build();
-  form.addTextItem().setTitle('Mobile number').setHelpText('10 digits, without +91').setValidation(tenDigits).setRequired(true);
-  form.addTextItem().setTitle('WhatsApp number (if different from mobile)').setHelpText('10 digits. Leave empty if same as mobile.').setValidation(tenDigits).setRequired(false);
+  // Letters (any language), spaces, dots, apostrophes and hyphens; 3-60 characters.
+  text("Owner's full name", 'Example: Ramesh Patel',
+       "^[\\p{L} .'-]{3,60}$", 'Enter your full name (3-60 letters, no numbers).', true);
+
+  // Examples: A-12, B 7, 45, C/3
+  text('Tenement / house number', 'Example: A-12',
+       '^[A-Za-z0-9][A-Za-z0-9 /-]{0,9}$', 'Use letters, numbers, space, / or - only (max 10 characters).', true);
+
+  form.addParagraphTextItem().setTitle('Full address').setRequired(true)
+    .setHelpText('House number, street, Maipal Nagar')
+    .setValidation(FormApp.createParagraphTextValidation()
+      .setHelpText('Please enter your complete address (at least 10 characters).')
+      .requireTextLengthGreaterThanOrEqualTo(10).build());
+
+  // Indian mobile: 10 digits starting with 6-9.
+  text('Mobile number', '10 digits, without +91 or spaces',
+       '^[6-9][0-9]{9}$', 'Enter a valid 10-digit mobile number starting with 6, 7, 8 or 9.', true);
+  text('WhatsApp number (if different from mobile)', '10 digits. Leave empty if same as mobile.',
+       '^[6-9][0-9]{9}$', 'Enter a valid 10-digit WhatsApp number starting with 6, 7, 8 or 9.', false);
 
   form.addMultipleChoiceItem().setTitle('Vehicle type')
     .setChoiceValues(['Car', 'Auto rickshaw']).setRequired(true);
-  form.addTextItem().setTitle('Vehicle number plate').setHelpText('Example: GJ01AB1234').setRequired(true);
-  form.addTextItem().setTitle('Vehicle brand').setHelpText('Example: Maruti Suzuki, Hyundai, Bajaj').setRequired(true);
-  form.addTextItem().setTitle('Vehicle name').setHelpText('Example: Swift, i20, RE').setRequired(true);
-  form.addTextItem().setTitle('Vehicle color').setHelpText('Example: White').setRequired(true);
 
-  var ss = SpreadsheetApp.create('Maipal Nagar Vehicle Register (responses)');
+  // Standard: GJ01AB1234 / GJ 01 AB 1234 / GJ-01-A-1234. Bharat series: 22BH1234AA.
+  text('Vehicle number plate', 'Example: GJ01AB1234',
+       '(?i)^([A-Z]{2}[ -]?[0-9]{1,2}[ -]?[A-Z]{1,3}[ -]?[0-9]{4}|[0-9]{2}[ -]?BH[ -]?[0-9]{4}[ -]?[A-Z]{1,2})$',
+       'Enter a valid number plate, for example GJ01AB1234.', true);
+
+  text('Vehicle brand', 'Example: Maruti Suzuki, Hyundai, Bajaj',
+       '^[\\p{L}0-9 .&+/-]{2,40}$', 'Enter the brand name (2-40 characters).', true);
+  text('Vehicle name', 'Example: Swift, i20, RE',
+       '^[\\p{L}0-9 .&+/-]{1,40}$', 'Enter the vehicle name (up to 40 characters).', true);
+  text('Vehicle color', 'Example: White',
+       '^[\\p{L} /-]{3,30}$', 'Enter a color using letters only, for example White.', true);
+
+  var ss = SpreadsheetApp.create('Maipal Nagar Parking (responses)');
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
 
-  Logger.log('Form (share this with residents): ' + form.getPublishedUrl());
+  Logger.log('FORM LINK (give this to me and residents): ' + form.getPublishedUrl());
   Logger.log('Form (edit): ' + form.getEditUrl());
-  Logger.log('Sheet: ' + ss.getUrl());
+  Logger.log('SHEET: ' + ss.getUrl());
 }

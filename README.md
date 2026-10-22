@@ -1,25 +1,33 @@
-# Maipal Nagar Vehicle Register
+# Maipal Nagar Parking
 
-Free setup, about 15 minutes. No server, no payment.
+Free setup, about 10 minutes. No server, no payment.
 
-## 1. Create the form and sheet
-1. Go to https://script.google.com and click **New project**.
-2. Paste the contents of `create-form.gs`, then click **Run** (function `createVehicleForm`) and allow access.
-3. Open **Execution log**. Copy the *Form (share this with residents)* link and open the *Sheet* link.
+## 1. Create the form and sheet (one time)
+1. Open https://script.google.com and sign in with the Google account that should own the register.
+2. Click **New project**. Delete the sample code and paste all of `create-form.gs`.
+3. Click **Save**, choose the function `createVehicleForm` in the toolbar, click **Run**.
+4. Click **Review permissions**, choose your account, then **Advanced > Go to project (unsafe) > Allow**. This is normal for your own script.
+5. Open **Execution log** at the bottom. Copy the **FORM LINK** and the **SHEET** link.
 
 ## 2. Publish the sheet as CSV
-In the Sheet: **File > Share > Publish to web** > choose *Form responses 1* and **CSV** > Publish. Copy the link.
+1. Open the SHEET link, then **File > Share > Publish to web**.
+2. Choose **Form responses 1** and **Comma-separated values (.csv)**, then **Publish**.
+3. Copy the link it shows.
 
 ## 3. Configure the page
-In `config.js` set:
+Edit `config.js`:
 ```js
 const SHEET_CSV_URL = "<CSV link from step 2>";
-const FORM_URL      = "<form link from step 1>";
+const FORM_URL      = "<FORM LINK from step 1>";
 ```
 
 ## 4. Host it (free)
-Repo **Settings > Pages**: deploy from branch `main`, folder `/ (root)`. Live at https://chiragpariyani.github.io/Mahipal-nagar-parking/
-Share the page link in the society WhatsApp group and pin it.
+Repo **Settings > Pages**: deploy from branch `main`, folder `/ (root)`.
+Live at https://chiragpariyani.github.io/Mahipal-nagar-parking/
+
+## Links to share in the WhatsApp group
+- Search a vehicle: https://chiragpariyani.github.io/Mahipal-nagar-parking/
+- Register a vehicle: https://chiragpariyani.github.io/Mahipal-nagar-parking/register.html
 
 ## Notes
 - If a plate is submitted again, the latest entry wins.
