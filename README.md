@@ -11,7 +11,7 @@ Free setup, about 15 minutes. No server, no payment.
 In the Sheet: **File > Share > Publish to web** > choose *Form responses 1* and **CSV** > Publish. Copy the link.
 
 ## 3. Configure the page
-In `index.html` set:
+In `config.js` set:
 ```js
 const SHEET_CSV_URL = "<CSV link from step 2>";
 const FORM_URL      = "<form link from step 1>";

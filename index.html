@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Maipal Nagar Vehicle Register</title>
+<meta name="theme-color" content="#1a6b4a">
+<title>Maipal Nagar Parking - Find Car Owner</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   :root { --bg:#f4f6f8; --card:#fff; --text:#1c2733; --muted:#5f6b78; --brand:#1a6b4a; --wa:#25a244; --line:#dfe4e9; }
   @media (prefers-color-scheme: dark) {
@@ -12,10 +14,18 @@
   }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--text); }
-  header { background:var(--brand); color:#fff; padding:18px 16px; }
-  header h1 { margin:0; font-size:1.3rem; }
-  header p { margin:4px 0 0; font-size:.9rem; opacity:.9; }
+  header { background:#1a6b4a; color:#fff; padding:16px; display:flex; align-items:center; gap:12px; }
+  header img { width:52px; height:52px; border-radius:12px; flex:none; }
+  header h1 { margin:0; font-size:1.25rem; line-height:1.2; }
+  header p { margin:3px 0 0; font-size:.88rem; opacity:.92; }
   main { max-width:640px; margin:0 auto; padding:16px; }
+  nav { display:flex; gap:8px; margin-bottom:12px; }
+  nav a { flex:1; text-align:center; padding:11px 6px; border-radius:10px; font-weight:600; text-decoration:none; font-size:.95rem; border:1px solid var(--line); background:var(--card); color:var(--text); }
+  nav a.primary { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .stats { display:flex; gap:8px; margin-bottom:6px; }
+  .stat { flex:1; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center; }
+  .stat b { display:block; font-size:1.3rem; color:var(--brand); }
+  .stat span { font-size:.78rem; color:var(--muted); }
   .search { position:sticky; top:0; background:var(--bg); padding:10px 0; z-index:1; }
   input[type=search] { width:100%; font-size:1.1rem; padding:14px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--text); }
   .count { color:var(--muted); font-size:.85rem; margin:6px 2px; }
@@ -28,32 +38,77 @@
   .actions { display:flex; gap:10px; margin-top:12px; }
   .btn { flex:1; text-align:center; text-decoration:none; padding:12px; border-radius:10px; font-weight:600; color:#fff; background:var(--brand); }
   .btn.wa { background:var(--wa); }
-  .add { display:block; text-align:center; margin:18px 0; padding:12px; border:2px dashed var(--brand); border-radius:10px; color:var(--brand); font-weight:600; text-decoration:none; }
   .msg { text-align:center; color:var(--muted); padding:30px 10px; }
+  section.info { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:16px 0; }
+  section.info h2 { margin:0 0 8px; font-size:1.05rem; }
+  section.info ol, section.info ul { margin:0; padding-left:20px; color:var(--muted); font-size:.93rem; line-height:1.55; }
+  .links { font-size:.88rem; color:var(--muted); word-break:break-all; }
+  .links b { color:var(--text); }
+  .share { display:block; text-align:center; text-decoration:none; background:var(--wa); color:#fff; font-weight:600; padding:12px; border-radius:10px; margin:12px 0 0; }
   .note { font-size:.78rem; color:var(--muted); text-align:center; margin:20px 0 40px; }
 </style>
+<script src="config.js"></script>
 </head>
 <body>
 <header>
-  <h1>Maipal Nagar Vehicle Register</h1>
-  <p>Find the owner of a vehicle that is blocking you</p>
+  <img src="logo.svg" alt="Maipal Nagar Parking logo">
+  <div>
+    <h1>Maipal Nagar Parking</h1>
+    <p>Find the owner of a car that is blocking you</p>
+  </div>
 </header>
 <main>
-  <div class="search">
-    <input id="q" type="search" placeholder="Search plate, name, tenement, brand, color..." autocomplete="off" autofocus>
+  <nav>
+    <a class="primary" href="#find">Find owner</a>
+    <a href="register.html" id="reg">Register vehicle</a>
+    <a href="#rules">Parking rules</a>
+  </nav>
+
+  <div class="stats">
+    <div class="stat"><b id="sAll">-</b><span>Vehicles</span></div>
+    <div class="stat"><b id="sCar">-</b><span>Cars</span></div>
+    <div class="stat"><b id="sAuto">-</b><span>Auto rickshaws</span></div>
+    <div class="stat"><b id="sHouse">-</b><span>Households</span></div>
+  </div>
+
+  <div class="search" id="find">
+    <input id="q" type="search" placeholder="Search plate, name, tenement, brand, color..." autocomplete="off">
     <div class="count" id="count"></div>
   </div>
   <div id="list"></div>
-  <a class="add" id="add" href="#" target="_blank" rel="noopener">+ Register your vehicle</a>
+
+  <section class="info">
+    <h2>How it works</h2>
+    <ol>
+      <li><b>Blocked?</b> Type the number plate (or the last 4 digits) above.</li>
+      <li>Tap <b>Call</b> or <b>WhatsApp</b> to reach the owner. The WhatsApp message is already written for you.</li>
+      <li><b>Not listed?</b> Ask the owner to register, it takes one minute.</li>
+    </ol>
+  </section>
+
+  <section class="info" id="rules">
+    <h2>Parking etiquette</h2>
+    <ul>
+      <li>Register every vehicle you park in the common plot.</li>
+      <li>Do not block another vehicle. If you must, keep your phone reachable.</li>
+      <li>Leave your tenement number visible on the dashboard.</li>
+      <li>Park inside the marked area and keep the lane clear for emergency vehicles.</li>
+      <li>Update your details if you sell your vehicle or change your number.</li>
+      <li>Be polite. A friendly call solves it faster than an angry one.</li>
+    </ul>
+  </section>
+
+  <section class="info">
+    <h2>Links to share</h2>
+    <p class="links"><b>Search a vehicle:</b><br><span id="lnkFind"></span></p>
+    <p class="links"><b>Register a vehicle:</b><br><span id="lnkReg"></span></p>
+    <a class="share" id="share" href="#" target="_blank" rel="noopener">Share on WhatsApp</a>
+  </section>
+
   <p class="note">For Maipal Nagar residents only. Please use these details only to contact vehicle owners.</p>
 </main>
 
 <script>
-// ---- CONFIGURE THESE TWO LINES AFTER SETUP (see README.md) ----
-const SHEET_CSV_URL = "";   // Google Sheet > File > Share > Publish to web > CSV link
-const FORM_URL      = "";   // Public link of the Google Form
-// ----------------------------------------------------------------
-
 const DEMO = [
   {name:"Demo Owner", tenement:"A-12", address:"A-12, Maipal Nagar", mobile:"9876543210", whatsapp:"", type:"Car", plate:"GJ01AB1234", brand:"Maruti Suzuki", model:"Swift", color:"White"},
   {name:"Demo Driver", tenement:"B-07", address:"B-07, Maipal Nagar", mobile:"9123456780", whatsapp:"", type:"Auto rickshaw", plate:"GJ01XY9876", brand:"Bajaj", model:"RE", color:"Yellow"}
@@ -107,6 +162,13 @@ function waLink(v) {
 
 const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+function stats() {
+  $("sAll").textContent = vehicles.length;
+  $("sCar").textContent = vehicles.filter(v => /car/i.test(v.type)).length;
+  $("sAuto").textContent = vehicles.filter(v => /auto/i.test(v.type)).length;
+  $("sHouse").textContent = new Set(vehicles.map(v => norm(v.tenement))).size;
+}
+
 function render() {
   const t = norm($("q").value);
   const list = t ? vehicles.filter(v => norm(Object.values(v).join(" ")).includes(t)) : vehicles;
@@ -122,17 +184,24 @@ function render() {
         <a class="btn" href="tel:${esc(v.mobile.replace(/\D/g, ""))}">Call</a>
         <a class="btn wa" href="${waLink(v)}" target="_blank" rel="noopener">WhatsApp</a>
       </div>
-    </div>`).join("") : '<div class="msg">No vehicle found. Check the number or register it below.</div>';
+    </div>`).join("") : '<div class="msg">No vehicle found. Check the number, or ask the owner to register.</div>';
 }
 
 async function load() {
-  if (FORM_URL) $("add").href = FORM_URL; else $("add").style.display = "none";
-  if (!SHEET_CSV_URL) { vehicles = DEMO; $("count").textContent = "Demo data. Set SHEET_CSV_URL in index.html."; render(); return; }
+  const base = location.href.split(/[?#]/)[0].replace(/index\.html$/, "");
+  $("lnkFind").textContent = base;
+  $("lnkReg").textContent = base + "register.html";
+  $("share").href = "https://wa.me/?text=" + encodeURIComponent(
+    "Maipal Nagar Parking\nFind a car owner: " + base + "\nRegister your vehicle: " + base + "register.html");
+  const pre = new URLSearchParams(location.search).get("q");
+  if (pre) $("q").value = pre;
+
+  if (!SHEET_CSV_URL) { vehicles = DEMO; stats(); render(); $("count").textContent = "Demo data. Set SHEET_CSV_URL in config.js."; return; }
   $("list").innerHTML = '<div class="msg">Loading...</div>';
   try {
     const res = await fetch(SHEET_CSV_URL);
     vehicles = fromRows(parseCSV(await res.text()));
-    render();
+    stats(); render();
   } catch (e) {
     $("list").innerHTML = '<div class="msg">Could not load the register. Please try again.</div>';
   }
