@@ -3,6 +3,9 @@
  * Run createVehicleForm() once; it creates the Google Form and its response Sheet,
  * with validation on every field. Open View > Execution log for the links.
  */
+// Responses are stored in this existing sheet (a new 'Form Responses 1' tab is added).
+var SHEET_ID = '1VVXdBa4tnrKaqy1t7QIrNgDZ_5wBFIEh7f-6u2W6X3Q';
+
 function createVehicleForm() {
   var form = FormApp.create('Maipal Nagar Parking - Vehicle Registration');
   form.setDescription(
@@ -55,7 +58,7 @@ function createVehicleForm() {
   text('Vehicle color', 'Example: White',
        '^[\\p{L} /-]{3,30}$', 'Enter a color using letters only, for example White.', true);
 
-  var ss = SpreadsheetApp.create('Maipal Nagar Parking (responses)');
+  var ss = SpreadsheetApp.openById(SHEET_ID);
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
 
   Logger.log('FORM LINK (give this to me and residents): ' + form.getPublishedUrl());
