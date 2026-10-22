@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Maipal Nagar Vehicle Register</title>
+<style>
+  :root { --bg:#f4f6f8; --card:#fff; --text:#1c2733; --muted:#5f6b78; --brand:#1a6b4a; --wa:#25a244; --line:#dfe4e9; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12171c; --card:#1c242c; --text:#e8edf2; --muted:#9aa6b2; --brand:#3cb98a; --wa:#2fb855; --line:#2c3742; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--text); }
+  header { background:var(--brand); color:#fff; padding:18px 16px; }
+  header h1 { margin:0; font-size:1.3rem; }
+  header p { margin:4px 0 0; font-size:.9rem; opacity:.9; }
+  main { max-width:640px; margin:0 auto; padding:16px; }
+  .search { position:sticky; top:0; background:var(--bg); padding:10px 0; z-index:1; }
+  input[type=search] { width:100%; font-size:1.1rem; padding:14px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--text); }
+  .count { color:var(--muted); font-size:.85rem; margin:6px 2px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin:10px 0; }
+  .plate { display:inline-block; font-weight:700; font-size:1.15rem; letter-spacing:.06em; border:2px solid var(--text); border-radius:6px; padding:2px 8px; }
+  .type { float:right; font-size:.8rem; color:var(--muted); }
+  .vehicle { margin:8px 0 2px; font-weight:600; }
+  .row { color:var(--muted); font-size:.92rem; margin:2px 0; }
+  .row b { color:var(--text); font-weight:600; }
+  .actions { display:flex; gap:10px; margin-top:12px; }
+  .btn { flex:1; text-align:center; text-decoration:none; padding:12px; border-radius:10px; font-weight:600; color:#fff; background:var(--brand); }
+  .btn.wa { background:var(--wa); }
+  .add { display:block; text-align:center; margin:18px 0; padding:12px; border:2px dashed var(--brand); border-radius:10px; color:var(--brand); font-weight:600; text-decoration:none; }
+  .msg { text-align:center; color:var(--muted); padding:30px 10px; }
+  .note { font-size:.78rem; color:var(--muted); text-align:center; margin:20px 0 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Maipal Nagar Vehicle Register</h1>
+  <p>Find the owner of a vehicle that is blocking you</p>
+</header>
+<main>
+  <div class="search">
+    <input id="q" type="search" placeholder="Search plate, name, tenement, brand, color..." autocomplete="off" autofocus>
+    <div class="count" id="count"></div>
+  </div>
+  <div id="list"></div>
+  <a class="add" id="add" href="#" target="_blank" rel="noopener">+ Register your vehicle</a>
+  <p class="note">For Maipal Nagar residents only. Please use these details only to contact vehicle owners.</p>
+</main>
+
+<script>
+// ---- CONFIGURE THESE TWO LINES AFTER SETUP (see README.md) ----
+const SHEET_CSV_URL = "";   // Google Sheet > File > Share > Publish to web > CSV link
+const FORM_URL      = "";   // Public link of the Google Form
+// ----------------------------------------------------------------
+
+const DEMO = [
+  {name:"Demo Owner", tenement:"A-12", address:"A-12, Maipal Nagar", mobile:"9876543210", whatsapp:"", type:"Car", plate:"GJ01AB1234", brand:"Maruti Suzuki", model:"Swift", color:"White"},
+  {name:"Demo Driver", tenement:"B-07", address:"B-07, Maipal Nagar", mobile:"9123456780", whatsapp:"", type:"Auto rickshaw", plate:"GJ01XY9876", brand:"Bajaj", model:"RE", color:"Yellow"}
+];
+
+let vehicles = [];
+const $ = id => document.getElementById(id);
+const norm = s => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+function parseCSV(text) {
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"' && text[i+1] === '"') { cell += '"'; i++; }
+      else if (c === '"') q = false;
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+    else if (c !== "\r") cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+function fromRows(rows) {
+  const head = rows[0].map(h => h.trim().toLowerCase());
+  const col = key => head.findIndex(h => h.startsWith(key));
+  const idx = {
+    name: col("owner"), tenement: col("tenement"), address: col("full address"),
+    mobile: col("mobile"), whatsapp: col("whatsapp"), type: col("vehicle type"),
+    plate: col("vehicle number"), brand: col("vehicle brand"), model: col("vehicle name"), color: col("vehicle color")
+  };
+  const byPlate = new Map();           // later rows overwrite earlier ones
+  for (const r of rows.slice(1)) {
+    const v = {};
+    for (const k in idx) v[k] = idx[k] >= 0 ? (r[idx[k]] || "").trim() : "";
+    if (!v.plate) continue;
+    byPlate.set(norm(v.plate), v);
+  }
+  return [...byPlate.values()];
+}
+
+function waLink(v) {
+  let n = (v.whatsapp || v.mobile).replace(/\D/g, "");
+  if (n.length === 10) n = "91" + n;
+  const text = `Hello ${v.name}, this is from Maipal Nagar. Your ${v.type.toLowerCase()} (${v.plate}) is blocking my vehicle. Please move it when you can. Thank you!`;
+  return `https://wa.me/${n}?text=${encodeURIComponent(text)}`;
+}
+
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render() {
+  const t = norm($("q").value);
+  const list = t ? vehicles.filter(v => norm(Object.values(v).join(" ")).includes(t)) : vehicles;
+  $("count").textContent = `${list.length} of ${vehicles.length} vehicles`;
+  $("list").innerHTML = list.length ? list.map(v => `
+    <div class="card">
+      <span class="type">${esc(v.type)}</span>
+      <span class="plate">${esc(v.plate.toUpperCase())}</span>
+      <div class="vehicle">${esc([v.color, v.brand, v.model].filter(Boolean).join(" "))}</div>
+      <div class="row"><b>${esc(v.name)}</b> &middot; Tenement ${esc(v.tenement)}</div>
+      <div class="row">${esc(v.address)}</div>
+      <div class="actions">
+        <a class="btn" href="tel:${esc(v.mobile.replace(/\D/g, ""))}">Call</a>
+        <a class="btn wa" href="${waLink(v)}" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </div>`).join("") : '<div class="msg">No vehicle found. Check the number or register it below.</div>';
+}
+
+async function load() {
+  if (FORM_URL) $("add").href = FORM_URL; else $("add").style.display = "none";
+  if (!SHEET_CSV_URL) { vehicles = DEMO; $("count").textContent = "Demo data. Set SHEET_CSV_URL in index.html."; render(); return; }
+  $("list").innerHTML = '<div class="msg">Loading...</div>';
+  try {
+    const res = await fetch(SHEET_CSV_URL);
+    vehicles = fromRows(parseCSV(await res.text()));
+    render();
+  } catch (e) {
+    $("list").innerHTML = '<div class="msg">Could not load the register. Please try again.</div>';
+  }
+}
+$("q").addEventListener("input", render);
+load();
+</script>
+</body>
+</html>
